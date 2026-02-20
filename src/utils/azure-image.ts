@@ -4,12 +4,9 @@ import { Logger } from "./logger.js";
 
 export type ImageSize = "1024x1024" | "1536x1024" | "1024x1536";
 export type ImageQuality = "low" | "medium" | "high";
-export type ImageStyle = "vivid" | "natural";
-
 export interface GenerateImageOptions {
   size?: ImageSize;
   quality?: ImageQuality;
-  style?: ImageStyle;
 }
 
 export interface EditImageOptions {
@@ -45,10 +42,9 @@ export class AzureImageClient {
     const {
       size = "1024x1024",
       quality = "high",
-      style = "vivid",
     } = options;
 
-    this.logger.debug("画像生成リクエスト", { prompt: prompt.substring(0, 100), size, quality, style });
+    this.logger.debug("画像生成リクエスト", { prompt: prompt.substring(0, 100), size, quality });
 
     try {
       const response = await this.client.images.generate({
@@ -57,7 +53,6 @@ export class AzureImageClient {
         n: 1,
         size,
         quality,
-        style,
         response_format: "b64_json",
       });
 

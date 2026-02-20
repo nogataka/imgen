@@ -210,7 +210,6 @@ async function configureDefaults(): Promise<void> {
     language: SupportedLanguage;
     imageSize: string;
     imageQuality: string;
-    imageStyle: string;
     imageFormat: string;
   }>([
     {
@@ -247,16 +246,6 @@ async function configureDefaults(): Promise<void> {
     },
     {
       type: "list",
-      name: "imageStyle",
-      message: "デフォルト画像スタイル",
-      choices: [
-        { name: "vivid (鮮やか)", value: "vivid" },
-        { name: "natural (自然)", value: "natural" },
-      ],
-      default: config.defaultImageStyle || DEFAULT_CONFIG.defaultImageStyle,
-    },
-    {
-      type: "list",
       name: "imageFormat",
       message: "デフォルト画像フォーマット",
       choices: [
@@ -271,7 +260,6 @@ async function configureDefaults(): Promise<void> {
   config.defaultLanguage = answers.language;
   config.defaultImageSize = answers.imageSize as Config["defaultImageSize"];
   config.defaultImageQuality = answers.imageQuality as Config["defaultImageQuality"];
-  config.defaultImageStyle = answers.imageStyle as Config["defaultImageStyle"];
   config.defaultImageFormat = answers.imageFormat as Config["defaultImageFormat"];
 
   await saveConfig(config);

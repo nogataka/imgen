@@ -2,7 +2,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { Command, Option } from "commander";
 import { getAzureConfig, loadConfig } from "../../utils/config.js";
-import type { ImageFormatConfig, ImageQualityConfig, ImageSizeConfig, ImageStyleConfig } from "../../utils/config.js";
+import type { ImageFormatConfig, ImageQualityConfig, ImageSizeConfig } from "../../utils/config.js";
 import { loadContextFile, saveFileWithUniqueNameIfExists } from "../../utils/file.js";
 import { AzureChatClient } from "../../utils/azure-chat.js";
 import { AzureImageClient } from "../../utils/azure-image.js";
@@ -15,7 +15,6 @@ interface GenOptions {
   output?: string;
   size: string;
   quality: string;
-  style: string;
   format: string;
   debug: boolean;
   json: boolean;
@@ -86,11 +85,6 @@ export function imageGenCommand(): Command {
         .default("high")
     )
     .addOption(
-      new Option("-t, --style <style>", "画像スタイル")
-        .choices(["vivid", "natural"])
-        .default("vivid")
-    )
-    .addOption(
       new Option("-f, --format <format>", "画像フォーマット")
         .choices(["png", "jpg", "webp"])
         .default("png")
@@ -108,7 +102,6 @@ export function imageGenCommand(): Command {
       // Preset application
       let presetSize: string | undefined;
       let presetQuality: string | undefined;
-      let presetStyle: string | undefined;
       let presetFormat: string | undefined;
 
       if (options.preset) {
@@ -124,7 +117,6 @@ export function imageGenCommand(): Command {
         }
         presetSize = preset.size;
         presetQuality = preset.quality;
-        presetStyle = preset.style;
         presetFormat = preset.format;
       }
 
@@ -139,10 +131,6 @@ export function imageGenCommand(): Command {
       const effectiveQuality = (options.quality !== "high"
         ? options.quality
         : presetQuality || config?.defaultImageQuality || options.quality) as ImageQualityConfig;
-
-      const effectiveStyle = (options.style !== "vivid"
-        ? options.style
-        : presetStyle || config?.defaultImageStyle || options.style) as ImageStyleConfig;
 
       const effectiveFormat = (options.format !== "png"
         ? options.format
@@ -161,7 +149,6 @@ export function imageGenCommand(): Command {
           theme,
           size: effectiveSize,
           quality: effectiveQuality,
-          style: effectiveStyle,
           format: effectiveFormat,
           output: options.output || `(自動生成).${effectiveFormat}`,
           ...(options.preset ? { preset: options.preset } : {}),
@@ -176,7 +163,6 @@ export function imageGenCommand(): Command {
           if (options.preset) console.log("  プリセット:", options.preset);
           console.log("  サイズ:", effectiveSize);
           console.log("  品質:", effectiveQuality);
-          console.log("  スタイル:", effectiveStyle);
           console.log("  フォーマット:", effectiveFormat);
           if (options.context) console.log("  コンテキスト:", options.context);
           console.log("  出力先:", options.output || `(自動生成).${effectiveFormat}`);
@@ -202,7 +188,6 @@ export function imageGenCommand(): Command {
         const imageData = await imageClient.generateImage(prompt, {
           size: effectiveSize,
           quality: effectiveQuality,
-          style: effectiveStyle,
         });
 
         // Generate filename
@@ -223,7 +208,6 @@ export function imageGenCommand(): Command {
           format,
           size: effectiveSize,
           quality: effectiveQuality,
-          style: effectiveStyle,
           ...(options.preset ? { preset: options.preset } : {}),
         });
 
@@ -234,7 +218,6 @@ export function imageGenCommand(): Command {
               format,
               size: effectiveSize,
               quality: effectiveQuality,
-              style: effectiveStyle,
               ...(options.preset ? { preset: options.preset } : {}),
             })
           );

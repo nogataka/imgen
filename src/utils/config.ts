@@ -5,7 +5,6 @@ import type { SupportedLanguage } from "../lang.js";
 
 export type ImageSizeConfig = "1024x1024" | "1536x1024" | "1024x1536";
 export type ImageQualityConfig = "low" | "medium" | "high";
-export type ImageStyleConfig = "vivid" | "natural";
 export type ImageFormatConfig = "png" | "jpg" | "webp";
 export type LogLevelConfig = "debug" | "info" | "warn" | "error";
 
@@ -20,7 +19,6 @@ export interface Config {
   defaultLanguage?: SupportedLanguage;
   defaultImageSize?: ImageSizeConfig;
   defaultImageQuality?: ImageQualityConfig;
-  defaultImageStyle?: ImageStyleConfig;
   defaultImageFormat?: ImageFormatConfig;
   logLevel?: LogLevelConfig;
 }
@@ -29,7 +27,6 @@ export const DEFAULT_CONFIG = {
   defaultLanguage: "ja" as SupportedLanguage,
   defaultImageSize: "1024x1024" as ImageSizeConfig,
   defaultImageQuality: "high" as ImageQualityConfig,
-  defaultImageStyle: "vivid" as ImageStyleConfig,
   defaultImageFormat: "png" as ImageFormatConfig,
   logLevel: "info" as LogLevelConfig,
 };

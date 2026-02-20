@@ -9,7 +9,7 @@
   "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
   "files": ["dist"],
   "scripts": {
-    "dev": "tsx src/index.ts",
+    "dev": "node --env-file=.env --import tsx src/index.ts",
     "build": "tsup src/index.ts --format esm --dts --clean",
     "test": "vitest run",
     "test:watch": "vitest",

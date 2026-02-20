@@ -27,23 +27,23 @@ describe("preset", () => {
 
   it("should have builtin presets", () => {
     expect(BUILTIN_PRESETS["builtin:square"]).toEqual({
-      size: "1024x1024", quality: "high", style: "vivid",
+      size: "1024x1024", quality: "high",
     });
     expect(BUILTIN_PRESETS["builtin:landscape"]).toEqual({
-      size: "1536x1024", quality: "high", style: "vivid",
+      size: "1536x1024", quality: "high",
     });
   });
 
   it("should get builtin preset", async () => {
     expect(await getPreset("builtin:square")).toEqual({
-      size: "1024x1024", quality: "high", style: "vivid",
+      size: "1024x1024", quality: "high",
     });
   });
 
   it("should save and get user preset", async () => {
-    await savePreset("test", { size: "1024x1536", quality: "low", style: "natural" });
+    await savePreset("test", { size: "1024x1536", quality: "low" });
     expect(await getPreset("test")).toEqual({
-      size: "1024x1536", quality: "low", style: "natural",
+      size: "1024x1536", quality: "low",
     });
   });
 

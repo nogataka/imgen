@@ -63,7 +63,6 @@ export function presetCommand(): Command {
     .description("新しいプリセットを保存")
     .option("-s, --size <size>", "画像サイズ (1024x1024, 1536x1024, 1024x1536)")
     .option("-q, --quality <quality>", "画像品質 (low, medium, high)")
-    .option("-t, --style <style>", "画像スタイル (vivid, natural)")
     .option("-f, --format <format>", "画像フォーマット (png, jpg, webp)")
     .action(
       async (
@@ -71,7 +70,6 @@ export function presetCommand(): Command {
         options: {
           size?: string;
           quality?: string;
-          style?: string;
           format?: string;
         }
       ) => {
@@ -80,7 +78,6 @@ export function presetCommand(): Command {
 
           if (options.size) preset.size = options.size as ImagePreset["size"];
           if (options.quality) preset.quality = options.quality as ImagePreset["quality"];
-          if (options.style) preset.style = options.style as ImagePreset["style"];
           if (options.format) preset.format = options.format as ImagePreset["format"];
 
           if (Object.keys(preset).length === 0) {
@@ -129,6 +126,5 @@ export function presetCommand(): Command {
 function formatPreset(preset: ImagePreset, indent: string): void {
   if (preset.size) console.log(`${indent}サイズ: ${preset.size}`);
   if (preset.quality) console.log(`${indent}品質: ${preset.quality}`);
-  if (preset.style) console.log(`${indent}スタイル: ${preset.style}`);
   if (preset.format) console.log(`${indent}フォーマット: ${preset.format}`);
 }

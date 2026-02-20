@@ -5,7 +5,6 @@ import type {
   ImageFormatConfig,
   ImageQualityConfig,
   ImageSizeConfig,
-  ImageStyleConfig,
 } from "./config.js";
 
 /**
@@ -14,7 +13,6 @@ import type {
 export interface ImagePreset {
   size?: ImageSizeConfig;
   quality?: ImageQualityConfig;
-  style?: ImageStyleConfig;
   format?: ImageFormatConfig;
 }
 
@@ -29,11 +27,11 @@ export interface Presets {
  * Built-in presets that ship with imgen.
  */
 export const BUILTIN_PRESETS: Presets = {
-  "builtin:square": { size: "1024x1024", quality: "high", style: "vivid" },
-  "builtin:landscape": { size: "1536x1024", quality: "high", style: "vivid" },
-  "builtin:portrait": { size: "1024x1536", quality: "high", style: "vivid" },
-  "builtin:draft": { size: "1024x1024", quality: "low", style: "natural" },
-  "builtin:photo": { size: "1536x1024", quality: "high", style: "natural" },
+  "builtin:square": { size: "1024x1024", quality: "high" },
+  "builtin:landscape": { size: "1536x1024", quality: "high" },
+  "builtin:portrait": { size: "1024x1536", quality: "high" },
+  "builtin:draft": { size: "1024x1024", quality: "low" },
+  "builtin:photo": { size: "1536x1024", quality: "high" },
 };
 
 /**
