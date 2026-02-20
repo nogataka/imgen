@@ -53,7 +53,7 @@ export class AzureImageClient {
         n: 1,
         size,
         quality,
-        response_format: "b64_json",
+        output_format: "png",
       });
 
       if (!response.data || response.data.length === 0 || !response.data[0].b64_json) {
