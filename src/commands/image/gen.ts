@@ -1,12 +1,11 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { Command, Option } from "commander";
-import { getAzureConfig, loadConfig } from "../../utils/config.js";
-import type { ImageFormatConfig, ImageQualityConfig, ImageSizeConfig } from "../../utils/config.js";
+import { getAzureConfig } from "../../utils/config.js";
+import type { ImageQualityConfig, ImageSizeConfig } from "../../utils/config.js";
 import { loadContextFile, saveFileWithUniqueNameIfExists } from "../../utils/file.js";
 import { AzureChatClient } from "../../utils/azure-chat.js";
 import { AzureImageClient } from "../../utils/azure-image.js";
-import { LogDestination, Logger, LogLevel } from "../../utils/logger.js";
 import { createErrorOutput, createSuccessOutput, printJson } from "../../utils/output.js";
 import { getPreset } from "../../utils/preset.js";
 
@@ -105,7 +104,7 @@ export function imageGenCommand(): Command {
       let presetFormat: string | undefined;
 
       if (options.preset) {
-        const preset = await getPreset(options.preset);
+        const preset = getPreset(options.preset);
         if (!preset) {
           const errorMsg = `プリセット '${options.preset}' が見つかりません。\nimgen preset list で一覧を確認してください。`;
           if (options.json) {
@@ -120,34 +119,17 @@ export function imageGenCommand(): Command {
         presetFormat = preset.format;
       }
 
-      // Load config defaults
-      const config = await loadConfig();
-
-      // Resolve effective values: CLI > preset > config > defaults
+      // Resolve effective values: CLI > preset > defaults
       const effectiveSize = (
-        options.size !== "1024x1024"
-          ? options.size
-          : presetSize || config?.defaultImageSize || options.size
+        options.size !== "1024x1024" ? options.size : presetSize || options.size
       ) as ImageSizeConfig;
 
       const effectiveQuality = (
-        options.quality !== "high"
-          ? options.quality
-          : presetQuality || config?.defaultImageQuality || options.quality
+        options.quality !== "high" ? options.quality : presetQuality || options.quality
       ) as ImageQualityConfig;
 
-      const effectiveFormat = (
-        options.format !== "png"
-          ? options.format
-          : presetFormat || config?.defaultImageFormat || options.format
-      ) as ImageFormatConfig;
-
-      // Logger setup
-      Logger.setGlobalConfig({
-        destination: LogDestination.BOTH,
-        minLevel: options.debug ? LogLevel.DEBUG : LogLevel.INFO,
-      });
-      const logger = Logger.getInstance({ name: "image-gen" });
+      const effectiveFormat =
+        options.format !== "png" ? options.format : presetFormat || options.format;
 
       // Dry-run mode
       if (options.dryRun) {
@@ -187,7 +169,7 @@ export function imageGenCommand(): Command {
         const prompt = await chatClient.generatePrompt(theme, context);
 
         if (options.debug) {
-          await logger.debug("生成されたプロンプト", { prompt, theme });
+          console.error("[DEBUG] 生成されたプロンプト:", JSON.stringify({ prompt, theme }));
         }
 
         // Generate image
@@ -209,14 +191,6 @@ export function imageGenCommand(): Command {
         // Save file
         const finalOutputPath = await saveFileWithUniqueNameIfExists(outputPath, imageData);
 
-        await logger.info("画像を生成しました", {
-          path: finalOutputPath,
-          format,
-          size: effectiveSize,
-          quality: effectiveQuality,
-          ...(options.preset ? { preset: options.preset } : {}),
-        });
-
         if (options.json) {
           printJson(
             createSuccessOutput("image gen", {
@@ -232,14 +206,12 @@ export function imageGenCommand(): Command {
         }
       } catch (error: unknown) {
         if (error instanceof Error) {
-          await logger.error("画像生成に失敗しました", { error: error.message });
           if (options.json) {
             printJson(createErrorOutput("image gen", error.message));
           } else {
             console.error("エラー:", error.message);
           }
         } else {
-          await logger.error("不明なエラーが発生しました");
           if (options.json) {
             printJson(createErrorOutput("image gen", "不明なエラーが発生しました"));
           } else {

@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import { Command } from "commander";
 import { LANGUAGE_DESCRIPTIONS, type SupportedLanguage } from "../../lang.js";
-import { getAzureConfig, loadConfig } from "../../utils/config.js";
+import { getAzureConfig } from "../../utils/config.js";
 import { AzureChatClient } from "../../utils/azure-chat.js";
 import { readImageFile } from "../../utils/image.js";
 
@@ -26,9 +26,7 @@ export function imageExplainCommand(): Command {
     .option("-o, --output <path>", "出力ファイルパス")
     .action(async (filePath: string, options: ExplainOptions) => {
       try {
-        const config = await loadConfig();
-        const lang =
-          options.lang === "ja" && config?.defaultLanguage ? config.defaultLanguage : options.lang;
+        const lang = options.lang;
 
         const validLangs = Object.keys(LANGUAGE_DESCRIPTIONS) as SupportedLanguage[];
         const effectiveLang = validLangs.includes(lang as SupportedLanguage) ? lang : "ja";

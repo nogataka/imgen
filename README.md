@@ -10,26 +10,31 @@ npm install -g @nogataka/imgen
 
 ## セットアップ
 
-### 環境変数（推奨）
+### 環境変数
 
 ```bash
 export AZURE_OPENAI_ENDPOINT="https://your-resource.openai.azure.com"
 export AZURE_OPENAI_API_KEY="your-api-key"
 export AZURE_OPENAI_DEPLOYMENT_NAME="gpt-5.1"
 export AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE="gpt-image-1.5"
-export AZURE_OPENAI_API_VERSION="2024-02-15-preview"
-export AZURE_OPENAI_IMAGE_API_VERSION="2025-04-01-preview"
+export AZURE_OPENAI_API_VERSION="2024-02-15-preview"        # 省略可
+export AZURE_OPENAI_IMAGE_API_VERSION="2025-04-01-preview"  # 省略可
 ```
 
-### 対話式設定
+### .env ファイル
+
+環境変数の代わりに `.env` ファイルで設定できます。探索順:
+
+1. `cwd/.env`（カレントディレクトリ）
+2. `~/.imgen/.env`
 
 ```bash
-imgen configure         # 対話式セットアップ
-imgen configure --show  # 現在の設定を表示
-imgen configure --reset # 設定をリセット
+# .env
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+AZURE_OPENAI_API_KEY=your-api-key
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-5.1
+AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE=gpt-image-1.5
 ```
-
-Azure OpenAI の接続情報やデフォルト値を対話的に設定できます。設定は `~/.imgen/config.json` に保存されます。
 
 環境変数が設定されている場合、環境変数が優先されます。
 
@@ -56,7 +61,7 @@ imgen image gen "商品写真" -p builtin:landscape
 | `--output <path>` | `-o` | 出力先ファイルまたはディレクトリ | カレントディレクトリ |
 | `--json` | | JSON 形式で出力 | - |
 | `--dry-run` | | API を呼ばずに設定を確認 | - |
-| `--debug` | `-d` | デバッグログを有効化 | - |
+| `--debug` | `-d` | デバッグ情報を表示 | - |
 
 ### 画像編集
 
@@ -97,11 +102,7 @@ imgen image explain chart.png -c "Q4 sales report" -f json -o description.json
 
 対応言語: `ja`(日本語), `en`(英語), `zh`(中国語), `ko`(韓国語), `es`(スペイン語), `fr`(フランス語), `de`(ドイツ語), `it`(イタリア語), `ru`(ロシア語), `vi`(ベトナム語)
 
-## プリセット
-
-よく使う設定をプリセットとして保存・呼び出しできます。
-
-### ビルトインプリセット
+## ビルトインプリセット
 
 | 名前 | サイズ | 品質 | 用途 |
 |------|--------|------|------|
@@ -111,32 +112,11 @@ imgen image explain chart.png -c "Q4 sales report" -f json -o description.json
 | `builtin:draft` | 1024x1024 | low | 下書き、プロトタイプ |
 | `builtin:photo` | 1536x1024 | high | 商品写真 |
 
-### カスタムプリセット
-
-```bash
-imgen preset save myhd -s 1536x1024 -q high -f png
-imgen preset list
-imgen preset delete myhd
-```
-
-プリセットは `~/.imgen/presets.json` に保存されます。
-
-## ログ
-
-操作ログは `~/.imgen/logs/` に JSON Lines 形式で保存されます。
-
-```bash
-imgen log                    # 直近 20 件
-imgen log -n 50 -l debug    # 直近 50 件（DEBUG 以上）
-imgen log -l error           # エラーのみ
-```
-
 ## 設定の優先順位
 
 1. CLI オプション（最優先）
 2. プリセット値（`-p` 指定時）
-3. 設定ファイル（`~/.imgen/config.json`）
-4. デフォルト値
+3. デフォルト値
 
 ## SDK として使う
 
@@ -151,7 +131,7 @@ npm install @nogataka/imgen
 `getAzureConfig()` は以下の優先順位で設定を解決します：
 
 1. **環境変数**（最優先）
-2. **`~/.imgen/config.json`**（`imgen configure` で設定）
+2. **`.env` ファイル**（`cwd/.env` → `~/.imgen/.env`）
 
 アプリ側で `.env` ファイルを読み込んでいる場合（dotenv, Next.js 等）、そこに追記するだけで動きます：
 
@@ -163,8 +143,6 @@ AZURE_OPENAI_DEPLOYMENT_NAME=gpt-5.1
 AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE=gpt-image-1.5
 ```
 
-`.env` を使わない場合は、事前に `imgen configure` を実行しておけば `~/.imgen/config.json` から読み込まれます。
-
 ### 使用例
 
 ```typescript
@@ -175,7 +153,7 @@ import {
   saveFileWithUniqueNameIfExists,
 } from "@nogataka/imgen/sdk";
 
-// Azure OpenAI 設定を取得（環境変数 or ~/.imgen/config.json）
+// Azure OpenAI 設定を取得（環境変数 or .envファイル）
 const config = await getAzureConfig();
 
 // 画像生成

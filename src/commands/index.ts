@@ -1,13 +1,10 @@
 import { Command } from "commander";
-import { configureCommand } from "./configure.js";
 import { imageCommand } from "./image/index.js";
-import { logCommand } from "./log.js";
-import { presetCommand } from "./preset.js";
 
 export function createMainCommand(): Command {
   const program = new Command()
     .name("imgen")
-    .version("0.2.0")
+    .version("0.3.0")
     .description("Azure OpenAI 画像生成・編集・説明ツール - gpt-image-1.5 / gpt-5.1")
     .addHelpText(
       "before",
@@ -32,7 +29,7 @@ export function createMainCommand(): Command {
   $ imgen image explain screenshot.png -l en
 
 クイックスタート:
-  1. 設定: imgen configure
+  1. APIキーを設定: export AZURE_OPENAI_API_KEY="..."
   2. 画像生成: imgen image gen "テーマ"
 `
     )
@@ -41,9 +38,6 @@ export function createMainCommand(): Command {
     });
 
   program.addCommand(imageCommand());
-  program.addCommand(presetCommand());
-  program.addCommand(configureCommand());
-  program.addCommand(logCommand());
 
   return program;
 }

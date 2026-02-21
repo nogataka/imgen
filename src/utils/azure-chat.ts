@@ -1,7 +1,6 @@
 import { AzureOpenAI } from "openai";
 import type { AzureConfig } from "./config.js";
 import type { ImageData } from "./image.js";
-import { Logger } from "./logger.js";
 
 /**
  * Client for Azure OpenAI Chat Completions API.
@@ -11,7 +10,6 @@ import { Logger } from "./logger.js";
 export class AzureChatClient {
   private client: AzureOpenAI;
   private deploymentName: string;
-  private logger: Logger;
 
   constructor(config: AzureConfig) {
     this.client = new AzureOpenAI({
@@ -21,7 +19,6 @@ export class AzureChatClient {
       deployment: config.deploymentName,
     });
     this.deploymentName = config.deploymentName;
-    this.logger = Logger.getInstance({ name: "azure-chat" });
   }
 
   /**
@@ -55,8 +52,7 @@ Prompt:
         messages: [{ role: "user", content: prompt }],
       });
       return response.choices[0]?.message?.content ?? "";
-    } catch (error) {
-      this.logger.error("プロンプト生成に失敗しました", { error });
+    } catch {
       throw new Error("プロンプトの生成に失敗しました");
     }
   }
@@ -86,8 +82,7 @@ Prompt:
         .replace(/^-|-$/g, "");
       if (fileName.length > maxLength) fileName = fileName.substring(0, maxLength);
       return fileName || "image";
-    } catch (error) {
-      this.logger.error("ファイル名生成に失敗しました", { error });
+    } catch {
       throw new Error("ファイル名の生成に失敗しました");
     }
   }
@@ -117,8 +112,7 @@ Prompt:
         ],
       });
       return response.choices[0]?.message?.content ?? "";
-    } catch (error) {
-      this.logger.error("画像説明の生成に失敗しました", { error });
+    } catch {
       throw new Error("画像の説明生成に失敗しました");
     }
   }

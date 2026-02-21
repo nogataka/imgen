@@ -1,12 +1,11 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { Command, Option } from "commander";
-import { getAzureConfig, loadConfig } from "../../utils/config.js";
-import type { ImageFormatConfig, ImageSizeConfig } from "../../utils/config.js";
+import { getAzureConfig } from "../../utils/config.js";
+import type { ImageSizeConfig } from "../../utils/config.js";
 import { fileExists, saveFileWithUniqueNameIfExists } from "../../utils/file.js";
 import { AzureChatClient } from "../../utils/azure-chat.js";
 import { AzureImageClient } from "../../utils/azure-image.js";
-import { LogDestination, Logger, LogLevel } from "../../utils/logger.js";
 import { createErrorOutput, createSuccessOutput, printJson } from "../../utils/output.js";
 
 interface EditOptions {
@@ -60,18 +59,8 @@ export function imageEditCommand(): Command {
         process.exit(1);
       }
 
-      // Load config defaults
-      const config = await loadConfig();
-      const effectiveSize = (
-        options.size !== "1024x1024" ? options.size : config?.defaultImageSize || options.size
-      ) as ImageSizeConfig;
-      const effectiveFormat = (
-        options.format !== "png" ? options.format : config?.defaultImageFormat || options.format
-      ) as ImageFormatConfig;
-
-      // Logger
-      Logger.setGlobalConfig({ destination: LogDestination.BOTH, minLevel: LogLevel.INFO });
-      const logger = Logger.getInstance({ name: "image-edit" });
+      const effectiveSize = options.size as ImageSizeConfig;
+      const effectiveFormat = options.format;
 
       // Dry-run
       if (options.dryRun) {
@@ -134,12 +123,6 @@ export function imageEditCommand(): Command {
         // Save file
         const finalPath = await saveFileWithUniqueNameIfExists(outputPath, editedData);
 
-        await logger.info("画像を編集しました", {
-          input: filePath,
-          output: finalPath,
-          size: effectiveSize,
-        });
-
         if (options.json) {
           printJson(
             createSuccessOutput("image edit", {
@@ -154,14 +137,12 @@ export function imageEditCommand(): Command {
         }
       } catch (error: unknown) {
         if (error instanceof Error) {
-          await logger.error("画像編集に失敗しました", { error: error.message });
           if (options.json) {
             printJson(createErrorOutput("image edit", error.message));
           } else {
             console.error("エラー:", error.message);
           }
         } else {
-          await logger.error("不明なエラーが発生しました");
           if (options.json) {
             printJson(createErrorOutput("image edit", "不明なエラーが発生しました"));
           } else {

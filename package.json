@@ -1,6 +1,6 @@
 {
   "name": "@nogataka/imgen",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Azure OpenAI画像生成・編集・説明CLIツール - gpt-image-1.5 / gpt-5.1",
   "type": "module",
   "bin": { "imgen": "dist/index.js" },
@@ -30,18 +30,11 @@
   "license": "MIT",
   "engines": { "node": ">=18.0.0" },
   "dependencies": {
-    "chalk": "^5.3.0",
-    "cli-table3": "^0.6.5",
     "commander": "^12.1.0",
-    "date-fns": "^3.6.0",
-    "fs-extra": "^11.2.0",
-    "inquirer": "^9.3.7",
     "openai": "^4.80.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.4",
-    "@types/inquirer": "^9.0.7",
     "@types/node": "^20.17.0",
     "eslint": "^9.15.0",
     "prettier": "^3.4.0",

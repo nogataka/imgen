@@ -1,79 +1,48 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import {
-  DEFAULT_CONFIG,
-  getAzureConfig,
-  getConfigDir,
-  getConfigPath,
-  getConfigValue,
-  loadConfig,
-  saveConfig,
-} from "./config.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { getAzureConfig } from "./config.js";
 
 describe("config", () => {
   let tempDir: string;
   let origHome: string | undefined;
-  let origKey: string | undefined;
-  let origEndpoint: string | undefined;
+  let origCwd: ReturnType<typeof vi.spyOn>;
+
+  const envKeys = [
+    "AZURE_OPENAI_API_KEY",
+    "AZURE_OPENAI_ENDPOINT",
+    "AZURE_OPENAI_DEPLOYMENT_NAME",
+    "AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE",
+    "AZURE_OPENAI_API_VERSION",
+    "AZURE_OPENAI_IMAGE_API_VERSION",
+  ] as const;
+
+  const savedEnv: Record<string, string | undefined> = {};
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "imgen-test-config-"));
     origHome = process.env.HOME;
-    origKey = process.env.AZURE_OPENAI_API_KEY;
-    origEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
     process.env.HOME = tempDir;
-    delete process.env.AZURE_OPENAI_API_KEY;
-    delete process.env.AZURE_OPENAI_ENDPOINT;
-    delete process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
-    delete process.env.AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE;
-    delete process.env.AZURE_OPENAI_API_VERSION;
-    delete process.env.AZURE_OPENAI_IMAGE_API_VERSION;
+
+    // 環境変数を退避・クリア
+    for (const key of envKeys) {
+      savedEnv[key] = process.env[key];
+      delete process.env[key];
+    }
+
+    // cwd をtempDirに向ける
+    origCwd = vi.spyOn(process, "cwd").mockReturnValue(tempDir);
   });
 
   afterEach(async () => {
     process.env.HOME = origHome;
-    if (origKey) process.env.AZURE_OPENAI_API_KEY = origKey;
-    else delete process.env.AZURE_OPENAI_API_KEY;
-    if (origEndpoint) process.env.AZURE_OPENAI_ENDPOINT = origEndpoint;
-    else delete process.env.AZURE_OPENAI_ENDPOINT;
+    for (const key of envKeys) {
+      if (savedEnv[key] !== undefined) process.env[key] = savedEnv[key];
+      else delete process.env[key];
+    }
+    origCwd.mockRestore();
     await fs.rm(tempDir, { recursive: true, force: true });
-  });
-
-  describe("getConfigDir", () => {
-    it("should return ~/.imgen", () => {
-      expect(getConfigDir()).toBe(path.join(tempDir, ".imgen"));
-    });
-  });
-
-  describe("getConfigPath", () => {
-    it("should return ~/.imgen/config.json", () => {
-      expect(getConfigPath()).toBe(path.join(tempDir, ".imgen", "config.json"));
-    });
-  });
-
-  describe("loadConfig / saveConfig", () => {
-    it("should return null when no config file", async () => {
-      expect(await loadConfig()).toBeNull();
-    });
-
-    it("should save and load config", async () => {
-      await saveConfig({ azureEndpoint: "https://test.openai.azure.com" });
-      const config = await loadConfig();
-      expect(config?.azureEndpoint).toBe("https://test.openai.azure.com");
-    });
-  });
-
-  describe("getConfigValue", () => {
-    it("should return saved value", async () => {
-      await saveConfig({ defaultImageSize: "1536x1024" });
-      expect(await getConfigValue("defaultImageSize")).toBe("1536x1024");
-    });
-
-    it("should return default when not set", async () => {
-      expect(await getConfigValue("defaultImageSize")).toBe(DEFAULT_CONFIG.defaultImageSize);
-    });
   });
 
   describe("getAzureConfig", () => {
@@ -82,32 +51,121 @@ describe("config", () => {
       process.env.AZURE_OPENAI_ENDPOINT = "https://test.openai.azure.com";
       process.env.AZURE_OPENAI_DEPLOYMENT_NAME = "gpt-5.1";
       process.env.AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE = "gpt-image-1.5";
-      process.env.AZURE_OPENAI_API_VERSION = "2024-02-15-preview";
-      process.env.AZURE_OPENAI_IMAGE_API_VERSION = "2025-04-01-preview";
 
       const config = await getAzureConfig();
       expect(config.apiKey).toBe("test-key");
       expect(config.endpoint).toBe("https://test.openai.azure.com");
       expect(config.deploymentName).toBe("gpt-5.1");
       expect(config.imageDeploymentName).toBe("gpt-image-1.5");
+      expect(config.apiVersion).toBe("2024-02-15-preview");
+      expect(config.imageApiVersion).toBe("2025-04-01-preview");
     });
 
-    it("should resolve from config file", async () => {
-      await saveConfig({
-        azureApiKey: "file-key",
-        azureEndpoint: "https://file.openai.azure.com",
-        azureDeploymentName: "gpt-5.1",
-        azureImageDeploymentName: "gpt-image-1.5",
-        azureApiVersion: "2024-02-15-preview",
-        azureImageApiVersion: "2025-04-01-preview",
-      });
+    it("should resolve from cwd/.env file", async () => {
+      const envContent = [
+        'AZURE_OPENAI_API_KEY="env-key"',
+        "AZURE_OPENAI_ENDPOINT=https://env.openai.azure.com",
+        "AZURE_OPENAI_DEPLOYMENT_NAME=gpt-5.1",
+        "AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE=gpt-image-1.5",
+      ].join("\n");
+      await fs.writeFile(path.join(tempDir, ".env"), envContent);
+
       const config = await getAzureConfig();
-      expect(config.apiKey).toBe("file-key");
-      expect(config.endpoint).toBe("https://file.openai.azure.com");
+      expect(config.apiKey).toBe("env-key");
+      expect(config.endpoint).toBe("https://env.openai.azure.com");
+    });
+
+    it("should resolve from ~/.imgen/.env file", async () => {
+      const imgenDir = path.join(tempDir, ".imgen");
+      await fs.mkdir(imgenDir, { recursive: true });
+      const envContent = [
+        "AZURE_OPENAI_API_KEY=imgen-key",
+        "AZURE_OPENAI_ENDPOINT=https://imgen.openai.azure.com",
+        "AZURE_OPENAI_DEPLOYMENT_NAME=gpt-5.1",
+        "AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE=gpt-image-1.5",
+      ].join("\n");
+      await fs.writeFile(path.join(imgenDir, ".env"), envContent);
+
+      // cwd/.envがない状態でフォールバック
+      const config = await getAzureConfig();
+      expect(config.apiKey).toBe("imgen-key");
+      expect(config.endpoint).toBe("https://imgen.openai.azure.com");
+    });
+
+    it("should prefer environment variables over .env file", async () => {
+      const envContent = [
+        "AZURE_OPENAI_API_KEY=file-key",
+        "AZURE_OPENAI_ENDPOINT=https://file.openai.azure.com",
+        "AZURE_OPENAI_DEPLOYMENT_NAME=gpt-5.1",
+        "AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE=gpt-image-1.5",
+      ].join("\n");
+      await fs.writeFile(path.join(tempDir, ".env"), envContent);
+
+      process.env.AZURE_OPENAI_API_KEY = "env-key";
+      process.env.AZURE_OPENAI_ENDPOINT = "https://env.openai.azure.com";
+      process.env.AZURE_OPENAI_DEPLOYMENT_NAME = "gpt-5.1";
+      process.env.AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE = "gpt-image-1.5";
+
+      const config = await getAzureConfig();
+      expect(config.apiKey).toBe("env-key");
+      expect(config.endpoint).toBe("https://env.openai.azure.com");
+    });
+
+    it("should handle single-quoted values in .env", async () => {
+      const envContent = [
+        "AZURE_OPENAI_API_KEY='quoted-key'",
+        "AZURE_OPENAI_ENDPOINT='https://quoted.openai.azure.com'",
+        "AZURE_OPENAI_DEPLOYMENT_NAME='gpt-5.1'",
+        "AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE='gpt-image-1.5'",
+      ].join("\n");
+      await fs.writeFile(path.join(tempDir, ".env"), envContent);
+
+      const config = await getAzureConfig();
+      expect(config.apiKey).toBe("quoted-key");
+    });
+
+    it("should skip comments and blank lines in .env", async () => {
+      const envContent = [
+        "# This is a comment",
+        "",
+        "AZURE_OPENAI_API_KEY=key-with-comments",
+        "# Another comment",
+        "AZURE_OPENAI_ENDPOINT=https://test.openai.azure.com",
+        "AZURE_OPENAI_DEPLOYMENT_NAME=gpt-5.1",
+        "AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE=gpt-image-1.5",
+      ].join("\n");
+      await fs.writeFile(path.join(tempDir, ".env"), envContent);
+
+      const config = await getAzureConfig();
+      expect(config.apiKey).toBe("key-with-comments");
     });
 
     it("should throw when no config available", async () => {
-      await expect(getAzureConfig()).rejects.toThrow();
+      await expect(getAzureConfig()).rejects.toThrow("Azure OpenAI の設定が見つかりません");
+    });
+
+    it("should use default API versions when not specified", async () => {
+      process.env.AZURE_OPENAI_API_KEY = "key";
+      process.env.AZURE_OPENAI_ENDPOINT = "https://test.openai.azure.com";
+      process.env.AZURE_OPENAI_DEPLOYMENT_NAME = "gpt-5.1";
+      process.env.AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE = "gpt-image-1.5";
+
+      const config = await getAzureConfig();
+      expect(config.apiVersion).toBe("2024-02-15-preview");
+      expect(config.imageApiVersion).toBe("2025-04-01-preview");
+    });
+
+    it("should override default API versions from env", async () => {
+      process.env.AZURE_OPENAI_API_KEY = "key";
+      process.env.AZURE_OPENAI_ENDPOINT = "https://test.openai.azure.com";
+      process.env.AZURE_OPENAI_DEPLOYMENT_NAME = "gpt-5.1";
+      process.env.AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE = "gpt-image-1.5";
+      process.env.AZURE_OPENAI_API_VERSION = "2025-01-01";
+      process.env.AZURE_OPENAI_IMAGE_API_VERSION = "2025-06-01";
+
+      const config = await getAzureConfig();
+      expect(config.apiVersion).toBe("2025-01-01");
+      expect(config.imageApiVersion).toBe("2025-06-01");
     });
   });
 });

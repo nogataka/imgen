@@ -1,6 +1,5 @@
 import { AzureOpenAI } from "openai";
 import type { AzureConfig } from "./config.js";
-import { Logger } from "./logger.js";
 
 export type ImageSize = "1024x1024" | "1536x1024" | "1024x1536";
 export type ImageQuality = "low" | "medium" | "high";
@@ -21,7 +20,6 @@ export interface EditImageOptions {
 export class AzureImageClient {
   private client: AzureOpenAI;
   private config: AzureConfig;
-  private logger: Logger;
 
   constructor(config: AzureConfig) {
     this.config = config;
@@ -31,7 +29,6 @@ export class AzureImageClient {
       apiVersion: config.imageApiVersion,
       deployment: config.imageDeploymentName,
     });
-    this.logger = Logger.getInstance({ name: "azure-image" });
   }
 
   /**
@@ -40,8 +37,6 @@ export class AzureImageClient {
    */
   async generateImage(prompt: string, options: GenerateImageOptions): Promise<Uint8Array> {
     const { size = "1024x1024", quality = "high" } = options;
-
-    this.logger.debug("画像生成リクエスト", { prompt: prompt.substring(0, 100), size, quality });
 
     try {
       const response = await this.client.images.generate({
@@ -66,7 +61,6 @@ export class AzureImageClient {
       return bytes;
     } catch (error) {
       if (error instanceof Error && error.message === "画像データが見つかりません") throw error;
-      this.logger.error("画像生成に失敗しました", { error });
       throw new Error(
         `画像生成に失敗しました: ${error instanceof Error ? error.message : String(error)}`
       );
@@ -84,8 +78,6 @@ export class AzureImageClient {
     options: EditImageOptions = {}
   ): Promise<Uint8Array> {
     const { size = "1024x1024" } = options;
-
-    this.logger.debug("画像編集リクエスト (REST API)", { prompt: prompt.substring(0, 100), size });
 
     const url =
       `${this.config.endpoint}/openai/deployments/${this.config.imageDeploymentName}` +
@@ -124,7 +116,6 @@ export class AzureImageClient {
       return bytes;
     } catch (error) {
       if (error instanceof Error && error.message === "画像データが見つかりません") throw error;
-      this.logger.error("画像編集に失敗しました", { error });
       throw new Error(
         `画像編集に失敗しました: ${error instanceof Error ? error.message : String(error)}`
       );

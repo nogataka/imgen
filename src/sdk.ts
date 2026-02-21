@@ -20,17 +20,15 @@ export type {
 // --- Config ---
 export type {
   AzureConfig,
-  Config,
   ImageSizeConfig,
   ImageQualityConfig,
   ImageFormatConfig,
-  LogLevelConfig,
 } from "./utils/config.js";
-export { getAzureConfig, loadConfig, saveConfig, DEFAULT_CONFIG } from "./utils/config.js";
+export { getAzureConfig } from "./utils/config.js";
 
 // --- Preset ---
-export type { ImagePreset, Presets } from "./utils/preset.js";
-export { BUILTIN_PRESETS, getPreset, listAllPresets } from "./utils/preset.js";
+export type { ImagePreset } from "./utils/preset.js";
+export { BUILTIN_PRESETS, getPreset } from "./utils/preset.js";
 
 // --- 画像ユーティリティ ---
 export type { ImageData } from "./utils/image.js";
