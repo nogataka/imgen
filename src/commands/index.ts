@@ -7,7 +7,7 @@ import { presetCommand } from "./preset.js";
 export function createMainCommand(): Command {
   const program = new Command()
     .name("imgen")
-    .version("0.1.0")
+    .version("0.2.0")
     .description("Azure OpenAI 画像生成・編集・説明ツール - gpt-image-1.5 / gpt-5.1")
     .addHelpText(
       "before",
@@ -26,7 +26,7 @@ export function createMainCommand(): Command {
       "after",
       `
 使用例:
-  $ imgen image gen "夕日の海辺" -q high -t vivid
+  $ imgen image gen "夕日の海辺" -q high -s 1536x1024
   $ imgen image gen "可愛い猫" -s 1024x1024 -p builtin:square
   $ imgen image edit photo.png "背景を青空に"
   $ imgen image explain screenshot.png -l en
