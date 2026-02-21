@@ -20,3 +20,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check-all
+      - run: npm run build
+      - name: Verify SDK output
+        run: |
+          test -f dist/sdk.js && test -f dist/sdk.d.ts

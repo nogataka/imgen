@@ -136,6 +136,71 @@ imgen log -l error           # エラーのみ
 3. 設定ファイル（`~/.imgen/config.json`）
 4. デフォルト値
 
+## SDK として使う
+
+imgen は CLI だけでなく、Node.js ライブラリとしても利用できます。スライドジェネレーターや LLM ツールなど、他のアプリケーションから画像生成・編集・説明機能を呼び出せます。
+
+```bash
+npm install @nogataka/imgen
+```
+
+```typescript
+import {
+  AzureImageClient,
+  AzureChatClient,
+  getAzureConfig,
+  saveFileWithUniqueNameIfExists,
+} from "@nogataka/imgen/sdk";
+
+// Azure OpenAI 設定を取得（環境変数 or ~/.imgen/config.json）
+const config = await getAzureConfig();
+
+// 画像生成
+const imageClient = new AzureImageClient(config);
+const imageBytes = await imageClient.generateImage("夕日の海辺", {
+  size: "1536x1024",
+  quality: "high",
+});
+const savedPath = await saveFileWithUniqueNameIfExists("sunset.png", imageBytes);
+
+// プロンプト拡張・画像説明
+const chatClient = new AzureChatClient(config);
+const prompt = await chatClient.generatePrompt("可愛い猫のマスコット");
+const fileName = await chatClient.generateFileName("可愛い猫のマスコット");
+
+// 画像編集
+import * as fs from "node:fs/promises";
+const photo = Buffer.from(await fs.readFile("photo.jpg"));
+const edited = await imageClient.editImage(photo, "背景を青空に変更");
+
+// 画像説明
+import { readImageFile } from "@nogataka/imgen/sdk";
+const imgData = await readImageFile("screenshot.png");
+const explanation = await chatClient.generateExplanation(imgData, "ja");
+```
+
+### LLM ツールとしての組み込み例
+
+```typescript
+import { AzureImageClient, AzureChatClient, getAzureConfig, saveFileWithUniqueNameIfExists } from "@nogataka/imgen/sdk";
+
+const generateImageTool = {
+  name: "generate_image",
+  description: "テキストから画像を生成する",
+  execute: async ({ theme }: { theme: string }) => {
+    const config = await getAzureConfig();
+    const chat = new AzureChatClient(config);
+    const image = new AzureImageClient(config);
+
+    const prompt = await chat.generatePrompt(theme);
+    const fileName = await chat.generateFileName(theme);
+    const bytes = await image.generateImage(prompt, { size: "1024x1024", quality: "high" });
+    const path = await saveFileWithUniqueNameIfExists(`${fileName}.png`, bytes);
+    return { path };
+  },
+};
+```
+
 ## 開発
 
 ```bash
