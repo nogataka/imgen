@@ -96,11 +96,7 @@ Prompt:
    * Generates a detailed explanation of an image using multimodal (vision) input.
    * The explanation language is controlled by the `lang` parameter.
    */
-  async generateExplanation(
-    imageData: ImageData,
-    lang = "ja",
-    context?: string
-  ): Promise<string> {
+  async generateExplanation(imageData: ImageData, lang = "ja", context?: string): Promise<string> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.deploymentName,

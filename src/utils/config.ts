@@ -96,18 +96,17 @@ export async function getConfigValue<K extends keyof Config>(
 export async function getAzureConfig(): Promise<AzureConfig> {
   const config = await loadConfig();
 
-  const endpoint =
-    process.env.AZURE_OPENAI_ENDPOINT || config?.azureEndpoint;
-  const apiKey =
-    process.env.AZURE_OPENAI_API_KEY || config?.azureApiKey;
-  const deploymentName =
-    process.env.AZURE_OPENAI_DEPLOYMENT_NAME || config?.azureDeploymentName;
+  const endpoint = process.env.AZURE_OPENAI_ENDPOINT || config?.azureEndpoint;
+  const apiKey = process.env.AZURE_OPENAI_API_KEY || config?.azureApiKey;
+  const deploymentName = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || config?.azureDeploymentName;
   const imageDeploymentName =
     process.env.AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE || config?.azureImageDeploymentName;
   const apiVersion =
     process.env.AZURE_OPENAI_API_VERSION || config?.azureApiVersion || "2024-02-15-preview";
   const imageApiVersion =
-    process.env.AZURE_OPENAI_IMAGE_API_VERSION || config?.azureImageApiVersion || "2025-04-01-preview";
+    process.env.AZURE_OPENAI_IMAGE_API_VERSION ||
+    config?.azureImageApiVersion ||
+    "2025-04-01-preview";
 
   if (!endpoint || !apiKey || !deploymentName || !imageDeploymentName) {
     throw new Error(

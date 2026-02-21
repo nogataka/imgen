@@ -27,9 +27,8 @@ export function imageExplainCommand(): Command {
     .action(async (filePath: string, options: ExplainOptions) => {
       try {
         const config = await loadConfig();
-        const lang = (options.lang === "ja" && config?.defaultLanguage)
-          ? config.defaultLanguage
-          : options.lang;
+        const lang =
+          options.lang === "ja" && config?.defaultLanguage ? config.defaultLanguage : options.lang;
 
         const validLangs = Object.keys(LANGUAGE_DESCRIPTIONS) as SupportedLanguage[];
         const effectiveLang = validLangs.includes(lang as SupportedLanguage) ? lang : "ja";

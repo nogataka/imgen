@@ -28,7 +28,8 @@ describe("AzureChatClient", () => {
 
   beforeEach(async () => {
     const openaiModule = await import("openai");
-    mockCreate = (openaiModule as unknown as { __mockCreate: ReturnType<typeof vi.fn> }).__mockCreate;
+    mockCreate = (openaiModule as unknown as { __mockCreate: ReturnType<typeof vi.fn> })
+      .__mockCreate;
     mockCreate.mockReset();
     client = new AzureChatClient(TEST_CONFIG);
   });

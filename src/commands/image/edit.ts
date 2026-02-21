@@ -62,12 +62,12 @@ export function imageEditCommand(): Command {
 
       // Load config defaults
       const config = await loadConfig();
-      const effectiveSize = (options.size !== "1024x1024"
-        ? options.size
-        : config?.defaultImageSize || options.size) as ImageSizeConfig;
-      const effectiveFormat = (options.format !== "png"
-        ? options.format
-        : config?.defaultImageFormat || options.format) as ImageFormatConfig;
+      const effectiveSize = (
+        options.size !== "1024x1024" ? options.size : config?.defaultImageSize || options.size
+      ) as ImageSizeConfig;
+      const effectiveFormat = (
+        options.format !== "png" ? options.format : config?.defaultImageFormat || options.format
+      ) as ImageFormatConfig;
 
       // Logger
       Logger.setGlobalConfig({ destination: LogDestination.BOTH, minLevel: LogLevel.INFO });

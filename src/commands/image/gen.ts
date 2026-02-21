@@ -124,17 +124,23 @@ export function imageGenCommand(): Command {
       const config = await loadConfig();
 
       // Resolve effective values: CLI > preset > config > defaults
-      const effectiveSize = (options.size !== "1024x1024"
-        ? options.size
-        : presetSize || config?.defaultImageSize || options.size) as ImageSizeConfig;
+      const effectiveSize = (
+        options.size !== "1024x1024"
+          ? options.size
+          : presetSize || config?.defaultImageSize || options.size
+      ) as ImageSizeConfig;
 
-      const effectiveQuality = (options.quality !== "high"
-        ? options.quality
-        : presetQuality || config?.defaultImageQuality || options.quality) as ImageQualityConfig;
+      const effectiveQuality = (
+        options.quality !== "high"
+          ? options.quality
+          : presetQuality || config?.defaultImageQuality || options.quality
+      ) as ImageQualityConfig;
 
-      const effectiveFormat = (options.format !== "png"
-        ? options.format
-        : presetFormat || config?.defaultImageFormat || options.format) as ImageFormatConfig;
+      const effectiveFormat = (
+        options.format !== "png"
+          ? options.format
+          : presetFormat || config?.defaultImageFormat || options.format
+      ) as ImageFormatConfig;
 
       // Logger setup
       Logger.setGlobalConfig({

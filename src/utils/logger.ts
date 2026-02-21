@@ -105,10 +105,18 @@ export class Logger {
     const dataStr = entry.data ? ` ${JSON.stringify(entry.data)}` : "";
     const msg = `[${ts}] [${this.name}] [${entry.level}] ${entry.message}${dataStr}`;
     switch (entry.level) {
-      case LogLevel.DEBUG: console.debug(msg); break;
-      case LogLevel.INFO: console.info(msg); break;
-      case LogLevel.WARN: console.warn(msg); break;
-      case LogLevel.ERROR: console.error(msg); break;
+      case LogLevel.DEBUG:
+        console.debug(msg);
+        break;
+      case LogLevel.INFO:
+        console.info(msg);
+        break;
+      case LogLevel.WARN:
+        console.warn(msg);
+        break;
+      case LogLevel.ERROR:
+        console.error(msg);
+        break;
     }
   }
 
@@ -159,14 +167,19 @@ export class Logger {
       const content = await fs.readFile(this.currentLogFile, "utf-8");
       const lines = content.trim().split("\n");
       const priority: Record<LogLevel, number> = {
-        [LogLevel.DEBUG]: 0, [LogLevel.INFO]: 1, [LogLevel.WARN]: 2, [LogLevel.ERROR]: 3,
+        [LogLevel.DEBUG]: 0,
+        [LogLevel.INFO]: 1,
+        [LogLevel.WARN]: 2,
+        [LogLevel.ERROR]: 3,
       };
       const entries: LogEntry[] = [];
       for (let i = lines.length - 1; i >= 0 && entries.length < maxEntries; i--) {
         try {
           const entry = JSON.parse(lines[i]) as LogEntry;
           if (priority[entry.level] >= priority[minLevel]) entries.unshift(entry);
-        } catch { continue; }
+        } catch {
+          continue;
+        }
       }
       return entries;
     } catch (error) {

@@ -9,7 +9,9 @@ export function createMainCommand(): Command {
     .name("imgen")
     .version("0.1.0")
     .description("Azure OpenAI 画像生成・編集・説明ツール - gpt-image-1.5 / gpt-5.1")
-    .addHelpText("before", `
+    .addHelpText(
+      "before",
+      `
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
 ║   imgen - Azure OpenAI Image Generation CLI                   ║
@@ -18,8 +20,11 @@ export function createMainCommand(): Command {
 ║   gpt-5.1          プロンプト拡張・画像説明                     ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
-`)
-    .addHelpText("after", `
+`
+    )
+    .addHelpText(
+      "after",
+      `
 使用例:
   $ imgen image gen "夕日の海辺" -q high -t vivid
   $ imgen image gen "可愛い猫" -s 1024x1024 -p builtin:square
@@ -29,7 +34,8 @@ export function createMainCommand(): Command {
 クイックスタート:
   1. 設定: imgen configure
   2. 画像生成: imgen image gen "テーマ"
-`)
+`
+    )
     .action(() => {
       program.help();
     });

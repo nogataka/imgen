@@ -1,11 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { getConfigDir } from "./config.js";
-import type {
-  ImageFormatConfig,
-  ImageQualityConfig,
-  ImageSizeConfig,
-} from "./config.js";
+import type { ImageFormatConfig, ImageQualityConfig, ImageSizeConfig } from "./config.js";
 
 /**
  * Represents a preset configuration for image generation.

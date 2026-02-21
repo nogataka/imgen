@@ -39,10 +39,7 @@ export class AzureImageClient {
    * Returns raw image bytes as a Uint8Array.
    */
   async generateImage(prompt: string, options: GenerateImageOptions): Promise<Uint8Array> {
-    const {
-      size = "1024x1024",
-      quality = "high",
-    } = options;
+    const { size = "1024x1024", quality = "high" } = options;
 
     this.logger.debug("画像生成リクエスト", { prompt: prompt.substring(0, 100), size, quality });
 

@@ -2,13 +2,7 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import {
-  BUILTIN_PRESETS,
-  deletePreset,
-  getPreset,
-  listAllPresets,
-  savePreset,
-} from "./preset.js";
+import { BUILTIN_PRESETS, deletePreset, getPreset, listAllPresets, savePreset } from "./preset.js";
 
 describe("preset", () => {
   let tempDir: string;
@@ -27,23 +21,27 @@ describe("preset", () => {
 
   it("should have builtin presets", () => {
     expect(BUILTIN_PRESETS["builtin:square"]).toEqual({
-      size: "1024x1024", quality: "high",
+      size: "1024x1024",
+      quality: "high",
     });
     expect(BUILTIN_PRESETS["builtin:landscape"]).toEqual({
-      size: "1536x1024", quality: "high",
+      size: "1536x1024",
+      quality: "high",
     });
   });
 
   it("should get builtin preset", async () => {
     expect(await getPreset("builtin:square")).toEqual({
-      size: "1024x1024", quality: "high",
+      size: "1024x1024",
+      quality: "high",
     });
   });
 
   it("should save and get user preset", async () => {
     await savePreset("test", { size: "1024x1536", quality: "low" });
     expect(await getPreset("test")).toEqual({
-      size: "1024x1536", quality: "low",
+      size: "1024x1536",
+      quality: "low",
     });
   });
 

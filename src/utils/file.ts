@@ -1,9 +1,6 @@
 import * as fs from "node:fs/promises";
 
-export async function generateUniqueFilePath(
-  outputPath: string,
-  maxRetries = 3
-): Promise<string> {
+export async function generateUniqueFilePath(outputPath: string, maxRetries = 3): Promise<string> {
   let finalPath = outputPath;
   let retryCount = 0;
 
@@ -12,7 +9,9 @@ export async function generateUniqueFilePath(
       await fs.stat(finalPath);
       const baseName = finalPath.slice(0, finalPath.lastIndexOf("."));
       const ext = finalPath.slice(finalPath.lastIndexOf("."));
-      const rand = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
+      const rand = Math.floor(Math.random() * 10000)
+        .toString()
+        .padStart(4, "0");
       finalPath = `${baseName}-${rand}${ext}`;
       retryCount++;
     } catch (error) {
