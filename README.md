@@ -144,6 +144,27 @@ imgen は CLI だけでなく、Node.js ライブラリとしても利用でき�
 npm install @nogataka/imgen
 ```
 
+### 認証設定
+
+`getAzureConfig()` は以下の優先順位で設定を解決します：
+
+1. **環境変数**（最優先）
+2. **`~/.imgen/config.json`**（`imgen configure` で設定）
+
+アプリ側で `.env` ファイルを読み込んでいる場合（dotenv, Next.js 等）、そこに追記するだけで動きます：
+
+```bash
+# アプリ側の .env
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+AZURE_OPENAI_API_KEY=your-api-key
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-5.1
+AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE=gpt-image-1.5
+```
+
+`.env` を使わない場合は、事前に `imgen configure` を実行しておけば `~/.imgen/config.json` から読み込まれます。
+
+### 使用例
+
 ```typescript
 import {
   AzureImageClient,
