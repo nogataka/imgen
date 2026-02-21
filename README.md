@@ -24,7 +24,9 @@ export AZURE_OPENAI_IMAGE_API_VERSION="2025-04-01-preview"
 ### 対話式設定
 
 ```bash
-imgen configure
+imgen configure         # 対話式セットアップ
+imgen configure --show  # 現在の設定を表示
+imgen configure --reset # 設定をリセット
 ```
 
 Azure OpenAI の接続情報やデフォルト値を対話的に設定できます。設定は `~/.imgen/config.json` に保存されます。
