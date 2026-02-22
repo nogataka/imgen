@@ -5,7 +5,22 @@ description: Azure OpenAI画像生成CLIツール (gpt-image-1.5 / gpt-5.1)。�
 
 # imgen - Azure OpenAI Image Generation CLI
 
-> **Note:** Run with `npx tsx /Volumes/Data/dev/imgen/src/index.ts` or `npm run dev --prefix /Volumes/Data/dev/imgen --` during development.
+## How to Run
+
+imgen is NOT globally installed. Use one of these methods:
+
+```bash
+# 開発モード（ソースから直接実行、.envを自動読み込み）
+npm run dev --prefix /Volumes/Data/dev/imgen -- <command>
+
+# npx でソースから実行（.envは自動読み込みされない）
+npx tsx /Volumes/Data/dev/imgen/src/index.ts <command>
+
+# npm パッケージとして実行（npm install -g @nogataka/imgen 済みの場合）
+imgen <command>
+```
+
+以下の例では `imgen` と表記するが、実際は上記いずれかの方法で実行すること。
 
 ## Quick Reference
 
@@ -13,9 +28,30 @@ description: Azure OpenAI画像生成CLIツール (gpt-image-1.5 / gpt-5.1)。�
 imgen image gen "<prompt>" -q <quality> -s <size>    # 画像生成
 imgen image edit <file> "<instruction>"               # 画像編集
 imgen image explain <file> -l <lang>                  # 画像説明
-imgen log -n <lines> -l <level>                       # ログ表示
-imgen configure                                       # 設定
 ```
+
+## Setup
+
+環境変数または `.env` ファイルで Azure OpenAI の認証情報を設定する。
+
+```bash
+# 環境変数（最優先）
+export AZURE_OPENAI_ENDPOINT="https://your-resource.openai.azure.com"
+export AZURE_OPENAI_API_KEY="your-api-key"
+export AZURE_OPENAI_DEPLOYMENT_NAME="gpt-5.1"
+export AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE="gpt-image-1.5"
+```
+
+`.env` ファイル探索順: `cwd/.env` → `~/.imgen/.env`
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI resource endpoint | (required) |
+| `AZURE_OPENAI_API_KEY` | Azure OpenAI API key | (required) |
+| `AZURE_OPENAI_DEPLOYMENT_NAME` | Chat model deployment | (required) |
+| `AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE` | Image model deployment | (required) |
+| `AZURE_OPENAI_API_VERSION` | Chat API version | 2024-02-15-preview |
+| `AZURE_OPENAI_IMAGE_API_VERSION` | Image API version | 2025-04-01-preview |
 
 ## Image Generation
 
@@ -23,14 +59,12 @@ imgen configure                                       # 設定
 imgen image gen [options] <theme>
 ```
 
-### Options
-
 | Option | Values | Default |
 |--------|--------|---------|
 | `-s, --size` | 1024x1024, 1536x1024, 1024x1536 | 1024x1024 |
 | `-q, --quality` | low, medium, high | high |
 | `-f, --format` | png, jpg, webp | png |
-| `-p, --preset` | preset name | - |
+| `-p, --preset` | builtin preset name | - |
 | `-c, --context` | context file path (.md/.txt) | - |
 | `-o, --output` | output path (file or directory) | auto |
 | `-d, --debug` | enable debug logging | false |
@@ -68,8 +102,6 @@ Edit instructions in natural language:
 
 Supported input formats: .jpg, .jpeg, .png, .gif, .webp
 
-### Options
-
 | Option | Values | Default |
 |--------|--------|---------|
 | `-s, --size` | 1024x1024, 1536x1024, 1024x1536 | 1024x1024 |
@@ -82,7 +114,7 @@ Supported input formats: .jpg, .jpeg, .png, .gif, .webp
 
 ```bash
 imgen image edit photo.jpg "背景を青空に変更"
-imgen image edit portrait.png "アニメスタイルに変換"
+imgen image edit portrait.png "アニメスタイルに変換" -s 1536x1024
 imgen image edit photo.png "edit" --dry-run
 ```
 
@@ -91,8 +123,6 @@ imgen image edit photo.png "edit" --dry-run
 ```bash
 imgen image explain [options] <file>
 ```
-
-### Options
 
 | Option | Values | Default |
 |--------|--------|---------|
@@ -109,53 +139,9 @@ imgen image explain photo.jpg -l en
 imgen image explain chart.png -c "Q4 sales report" -f json
 ```
 
-## Log Viewing
-
-```bash
-imgen log [options]
-```
-
-### Options
-
-| Option | Values | Default |
-|--------|--------|---------|
-| `-n, --lines` | number of lines | 20 |
-| `-l, --level` | debug, info, warn, error | info |
-
-### Examples
-
-```bash
-imgen log
-imgen log -n 50 -l debug
-imgen log -l error
-```
-
-## Workflow Patterns
-
-### Generate, then Edit
-
-```bash
-imgen image gen "商品写真のヘッドホン" -q high
-imgen image edit headphones.png "白背景にソフトシャドウを追加"
-```
-
-### Generate and Explain
-
-```bash
-imgen image gen "抽象的なアート"
-imgen image explain abstract-art.png -l ja
-```
-
-### Preset Workflow
-
-```bash
-imgen preset list                                          # プリセット一覧
-imgen preset save mypreset -s 1536x1024 -q high -f png     # 保存
-imgen image gen "テーマ" -p mypreset                         # 使用
-imgen preset delete mypreset                                # 削除
-```
-
 ## Builtin Presets
+
+`-p` オプションで指定可能:
 
 | Name | Size | Quality |
 |------|------|---------|
@@ -165,33 +151,6 @@ imgen preset delete mypreset                                # 削除
 | `builtin:draft` | 1024x1024 | low |
 | `builtin:photo` | 1536x1024 | high |
 
-## Configuration
+## Option Priority
 
-```bash
-imgen configure         # Interactive setup
-imgen configure --show  # Show current config
-imgen configure --reset # Reset all settings
-```
-
-### Priority Order
-
-CLI options > Preset values (`-p`) > Config file (`~/.imgen/config.json`) > Default values
-
-### Environment Variables
-
-Environment variables take precedence over config file:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI resource endpoint | - |
-| `AZURE_OPENAI_API_KEY` | Azure OpenAI API key | - |
-| `AZURE_OPENAI_DEPLOYMENT_NAME` | Chat model deployment | gpt-5.1 |
-| `AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE` | Image model deployment | gpt-image-1.5 |
-| `AZURE_OPENAI_API_VERSION` | Chat API version | 2024-02-15-preview |
-| `AZURE_OPENAI_IMAGE_API_VERSION` | Image API version | 2025-04-01-preview |
-
-### File Locations
-
-- Config: `~/.imgen/config.json`
-- Presets: `~/.imgen/presets.json`
-- Logs: `~/.imgen/logs/`
+CLI options > Preset values (`-p`) > Default values
