@@ -1,17 +1,29 @@
 {
   "name": "@nogataka/imgen",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "OpenAI / Azure OpenAI 画像生成・編集・説明CLIツール - gpt-image-1.5 / gpt-5.1",
   "type": "module",
-  "bin": { "imgen": "dist/index.js" },
+  "bin": {
+    "imgen": "dist/index.js"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" },
-    "./sdk": { "import": "./dist/sdk.js", "types": "./dist/sdk.d.ts" }
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./sdk": {
+      "import": "./dist/sdk.js",
+      "types": "./dist/sdk.d.ts"
+    }
   },
-  "files": ["dist"],
-  "publishConfig": { "access": "public" },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "node --env-file=.env --import tsx src/index.ts",
     "build": "tsup src/index.ts src/sdk.ts --format esm --dts --clean",
@@ -25,10 +37,21 @@
     "check-all": "npm run check && npm run lint && npm run format:check && npm run test",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["image", "ai", "azure", "openai", "cli"],
-  "repository": { "type": "git", "url": "git+https://github.com/nogataka/imgen.git" },
+  "keywords": [
+    "image",
+    "ai",
+    "azure",
+    "openai",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nogataka/imgen.git"
+  },
   "license": "MIT",
-  "engines": { "node": ">=18.0.0" },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "commander": "^12.1.0",
     "openai": "^4.80.0",

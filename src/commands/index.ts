@@ -4,7 +4,7 @@ import { imageCommand } from "./image/index.js";
 export function createMainCommand(): Command {
   const program = new Command()
     .name("imgen")
-    .version("0.3.0")
+    .version("0.4.0")
     .description("OpenAI 画像生成・編集・説明ツール - gpt-image-1.5 / gpt-5.1")
     .addHelpText(
       "before",
