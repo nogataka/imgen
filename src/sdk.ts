@@ -1,30 +1,32 @@
 /**
- * imgen SDK - Azure OpenAI Image Generation Library
+ * imgen SDK - OpenAI / Azure OpenAI Image Generation Library
  *
- * Azure OpenAI (gpt-image-1.5 / gpt-5.1) を使った
+ * OpenAI (gpt-image-1.5 / gpt-5.1) を使った
  * 画像生成・編集・説明のプログラマティック API
  */
 
 // --- クライアント ---
-export { AzureImageClient } from "./utils/azure-image.js";
-export { AzureChatClient } from "./utils/azure-chat.js";
+export { ImageClient } from "./utils/image-client.js";
+export { ChatClient } from "./utils/chat-client.js";
 
-// --- AzureImageClient 型 ---
+// --- ImageClient 型 ---
 export type {
   ImageSize,
   ImageQuality,
   GenerateImageOptions,
   EditImageOptions,
-} from "./utils/azure-image.js";
+} from "./utils/image-client.js";
 
 // --- Config ---
 export type {
   AzureConfig,
+  OpenAIConfig,
+  ProviderConfig,
   ImageSizeConfig,
   ImageQualityConfig,
   ImageFormatConfig,
 } from "./utils/config.js";
-export { getAzureConfig } from "./utils/config.js";
+export { getAzureConfig, getOpenAIConfig, getConfig } from "./utils/config.js";
 
 // --- Preset ---
 export type { ImagePreset } from "./utils/preset.js";

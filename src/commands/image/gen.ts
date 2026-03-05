@@ -1,11 +1,11 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { Command, Option } from "commander";
-import { getAzureConfig } from "../../utils/config.js";
+import { getConfig } from "../../utils/config.js";
 import type { ImageQualityConfig, ImageSizeConfig } from "../../utils/config.js";
 import { loadContextFile, saveFileWithUniqueNameIfExists } from "../../utils/file.js";
-import { AzureChatClient } from "../../utils/azure-chat.js";
-import { AzureImageClient } from "../../utils/azure-image.js";
+import { ChatClient } from "../../utils/chat-client.js";
+import { ImageClient } from "../../utils/image-client.js";
 import { createErrorOutput, createSuccessOutput, printJson } from "../../utils/output.js";
 import { getPreset } from "../../utils/preset.js";
 
@@ -160,9 +160,9 @@ export function imageGenCommand(): Command {
       }
 
       try {
-        const azureConfig = await getAzureConfig();
-        const chatClient = new AzureChatClient(azureConfig);
-        const imageClient = new AzureImageClient(azureConfig);
+        const config = await getConfig();
+        const chatClient = new ChatClient(config);
+        const imageClient = new ImageClient(config);
 
         // Generate expanded prompt
         const context = await loadContextFile(options.context);

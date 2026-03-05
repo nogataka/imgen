@@ -1,7 +1,7 @@
 {
   "name": "@nogataka/imgen",
   "version": "0.3.0",
-  "description": "Azure OpenAI画像生成・編集・説明CLIツール - gpt-image-1.5 / gpt-5.1",
+  "description": "OpenAI / Azure OpenAI 画像生成・編集・説明CLIツール - gpt-image-1.5 / gpt-5.1",
   "type": "module",
   "bin": { "imgen": "dist/index.js" },
   "main": "./dist/index.js",

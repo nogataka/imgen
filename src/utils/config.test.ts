@@ -2,7 +2,7 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getAzureConfig } from "./config.js";
+import { getAzureConfig, getOpenAIConfig, getConfig } from "./config.js";
 
 describe("config", () => {
   let tempDir: string;
@@ -16,6 +16,9 @@ describe("config", () => {
     "AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE",
     "AZURE_OPENAI_API_VERSION",
     "AZURE_OPENAI_IMAGE_API_VERSION",
+    "OPENAI_API_KEY",
+    "OPENAI_CHAT_MODEL",
+    "OPENAI_IMAGE_MODEL",
   ] as const;
 
   const savedEnv: Record<string, string | undefined> = {};
@@ -53,6 +56,7 @@ describe("config", () => {
       process.env.AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE = "gpt-image-1.5";
 
       const config = await getAzureConfig();
+      expect(config.provider).toBe("azure");
       expect(config.apiKey).toBe("test-key");
       expect(config.endpoint).toBe("https://test.openai.azure.com");
       expect(config.deploymentName).toBe("gpt-5.1");
@@ -166,6 +170,82 @@ describe("config", () => {
       const config = await getAzureConfig();
       expect(config.apiVersion).toBe("2025-01-01");
       expect(config.imageApiVersion).toBe("2025-06-01");
+    });
+  });
+
+  describe("getOpenAIConfig", () => {
+    it("should resolve from environment variables", async () => {
+      process.env.OPENAI_API_KEY = "sk-test";
+
+      const config = await getOpenAIConfig();
+      expect(config.provider).toBe("openai");
+      expect(config.apiKey).toBe("sk-test");
+      expect(config.chatModel).toBe("gpt-5.1");
+      expect(config.imageModel).toBe("gpt-image-1.5");
+    });
+
+    it("should use custom models from env", async () => {
+      process.env.OPENAI_API_KEY = "sk-test";
+      process.env.OPENAI_CHAT_MODEL = "gpt-4o";
+      process.env.OPENAI_IMAGE_MODEL = "dall-e-3";
+
+      const config = await getOpenAIConfig();
+      expect(config.chatModel).toBe("gpt-4o");
+      expect(config.imageModel).toBe("dall-e-3");
+    });
+
+    it("should resolve from .env file", async () => {
+      const envContent = 'OPENAI_API_KEY="sk-from-file"';
+      await fs.writeFile(path.join(tempDir, ".env"), envContent);
+
+      const config = await getOpenAIConfig();
+      expect(config.apiKey).toBe("sk-from-file");
+    });
+
+    it("should throw when no API key", async () => {
+      await expect(getOpenAIConfig()).rejects.toThrow("OpenAI の設定が見つかりません");
+    });
+  });
+
+  describe("getConfig", () => {
+    it("should auto-detect Azure provider", async () => {
+      process.env.AZURE_OPENAI_API_KEY = "azure-key";
+      process.env.AZURE_OPENAI_ENDPOINT = "https://test.openai.azure.com";
+      process.env.AZURE_OPENAI_DEPLOYMENT_NAME = "gpt-5.1";
+      process.env.AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE = "gpt-image-1.5";
+
+      const config = await getConfig();
+      expect(config.provider).toBe("azure");
+    });
+
+    it("should auto-detect OpenAI provider", async () => {
+      process.env.OPENAI_API_KEY = "sk-test";
+
+      const config = await getConfig();
+      expect(config.provider).toBe("openai");
+    });
+
+    it("should prefer Azure when both are set", async () => {
+      process.env.AZURE_OPENAI_API_KEY = "azure-key";
+      process.env.AZURE_OPENAI_ENDPOINT = "https://test.openai.azure.com";
+      process.env.AZURE_OPENAI_DEPLOYMENT_NAME = "gpt-5.1";
+      process.env.AZURE_OPENAI_DEPLOYMENT_NAME_IMAGE = "gpt-image-1.5";
+      process.env.OPENAI_API_KEY = "sk-test";
+
+      const config = await getConfig();
+      expect(config.provider).toBe("azure");
+    });
+
+    it("should throw when no provider configured", async () => {
+      await expect(getConfig()).rejects.toThrow("API キーが見つかりません");
+    });
+
+    it("should auto-detect from .env file", async () => {
+      const envContent = 'OPENAI_API_KEY="sk-env-file"';
+      await fs.writeFile(path.join(tempDir, ".env"), envContent);
+
+      const config = await getConfig();
+      expect(config.provider).toBe("openai");
     });
   });
 });

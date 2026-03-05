@@ -7,6 +7,7 @@ export type ImageQualityConfig = "low" | "medium" | "high";
 export type ImageFormatConfig = "png" | "jpg" | "webp";
 
 export interface AzureConfig {
+  provider: "azure";
   endpoint: string;
   apiKey: string;
   deploymentName: string;
@@ -14,6 +15,15 @@ export interface AzureConfig {
   apiVersion: string;
   imageApiVersion: string;
 }
+
+export interface OpenAIConfig {
+  provider: "openai";
+  apiKey: string;
+  chatModel: string;
+  imageModel: string;
+}
+
+export type ProviderConfig = AzureConfig | OpenAIConfig;
 
 /**
  * .envファイルをパースしてキーバリューのペアを返す
@@ -88,5 +98,54 @@ export async function getAzureConfig(): Promise<AzureConfig> {
     );
   }
 
-  return { endpoint, apiKey, deploymentName, imageDeploymentName, apiVersion, imageApiVersion };
+  return {
+    provider: "azure",
+    endpoint,
+    apiKey,
+    deploymentName,
+    imageDeploymentName,
+    apiVersion,
+    imageApiVersion,
+  };
+}
+
+/**
+ * Resolves the OpenAI configuration from environment variables and .env files.
+ * Throws if OPENAI_API_KEY is missing.
+ */
+export async function getOpenAIConfig(): Promise<OpenAIConfig> {
+  const envVars = await loadEnvVars();
+
+  const apiKey = process.env.OPENAI_API_KEY || envVars.OPENAI_API_KEY;
+  const chatModel = process.env.OPENAI_CHAT_MODEL || envVars.OPENAI_CHAT_MODEL || "gpt-5.1";
+  const imageModel =
+    process.env.OPENAI_IMAGE_MODEL || envVars.OPENAI_IMAGE_MODEL || "gpt-image-1.5";
+
+  if (!apiKey) {
+    throw new Error(
+      "OpenAI の設定が見つかりません。OPENAI_API_KEY を環境変数または .env ファイルで設定してください。"
+    );
+  }
+
+  return { provider: "openai", apiKey, chatModel, imageModel };
+}
+
+/**
+ * Auto-detects the provider from environment variables.
+ * Priority: Azure (AZURE_OPENAI_API_KEY) → OpenAI (OPENAI_API_KEY) → error.
+ */
+export async function getConfig(): Promise<ProviderConfig> {
+  const envVars = await loadEnvVars();
+
+  const hasAzure = !!(process.env.AZURE_OPENAI_API_KEY || envVars.AZURE_OPENAI_API_KEY);
+  const hasOpenAI = !!(process.env.OPENAI_API_KEY || envVars.OPENAI_API_KEY);
+
+  if (hasAzure) return getAzureConfig();
+  if (hasOpenAI) return getOpenAIConfig();
+
+  throw new Error(
+    "API キーが見つかりません。以下のいずれかを設定してください:\n" +
+      "  Azure OpenAI: AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, ...\n" +
+      "  OpenAI:       OPENAI_API_KEY"
+  );
 }

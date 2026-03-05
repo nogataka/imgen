@@ -1,24 +1,28 @@
-import { AzureOpenAI } from "openai";
-import type { AzureConfig } from "./config.js";
+import OpenAI, { AzureOpenAI } from "openai";
+import type { ProviderConfig } from "./config.js";
 import type { ImageData } from "./image.js";
 
 /**
- * Client for Azure OpenAI Chat Completions API.
- * Provides methods to generate image prompts, file names, and image explanations
- * using a chat model (e.g. gpt-5.1).
+ * Client for OpenAI / Azure OpenAI Chat Completions API.
+ * Provides methods to generate image prompts, file names, and image explanations.
  */
-export class AzureChatClient {
-  private client: AzureOpenAI;
-  private deploymentName: string;
+export class ChatClient {
+  private client: OpenAI;
+  private model: string;
 
-  constructor(config: AzureConfig) {
-    this.client = new AzureOpenAI({
-      endpoint: config.endpoint,
-      apiKey: config.apiKey,
-      apiVersion: config.apiVersion,
-      deployment: config.deploymentName,
-    });
-    this.deploymentName = config.deploymentName;
+  constructor(config: ProviderConfig) {
+    if (config.provider === "azure") {
+      this.client = new AzureOpenAI({
+        endpoint: config.endpoint,
+        apiKey: config.apiKey,
+        apiVersion: config.apiVersion,
+        deployment: config.deploymentName,
+      });
+      this.model = config.deploymentName;
+    } else {
+      this.client = new OpenAI({ apiKey: config.apiKey });
+      this.model = config.chatModel;
+    }
   }
 
   /**
@@ -48,7 +52,7 @@ Prompt:
 
     try {
       const response = await this.client.chat.completions.create({
-        model: this.deploymentName,
+        model: this.model,
         messages: [{ role: "user", content: prompt }],
       });
       return response.choices[0]?.message?.content ?? "";
@@ -65,7 +69,7 @@ Prompt:
 
     try {
       const response = await this.client.chat.completions.create({
-        model: this.deploymentName,
+        model: this.model,
         messages: [
           {
             role: "user",
@@ -94,7 +98,7 @@ Prompt:
   async generateExplanation(imageData: ImageData, lang = "ja", context?: string): Promise<string> {
     try {
       const response = await this.client.chat.completions.create({
-        model: this.deploymentName,
+        model: this.model,
         messages: [
           {
             role: "user",

@@ -1,8 +1,8 @@
 import * as fs from "node:fs/promises";
 import { Command } from "commander";
 import { LANGUAGE_DESCRIPTIONS, type SupportedLanguage } from "../../lang.js";
-import { getAzureConfig } from "../../utils/config.js";
-import { AzureChatClient } from "../../utils/azure-chat.js";
+import { getConfig } from "../../utils/config.js";
+import { ChatClient } from "../../utils/chat-client.js";
 import { readImageFile } from "../../utils/image.js";
 
 interface ExplainOptions {
@@ -31,8 +31,8 @@ export function imageExplainCommand(): Command {
         const validLangs = Object.keys(LANGUAGE_DESCRIPTIONS) as SupportedLanguage[];
         const effectiveLang = validLangs.includes(lang as SupportedLanguage) ? lang : "ja";
 
-        const azureConfig = await getAzureConfig();
-        const chatClient = new AzureChatClient(azureConfig);
+        const config = await getConfig();
+        const chatClient = new ChatClient(config);
         const imageData = await readImageFile(filePath);
 
         let context: string | undefined;
